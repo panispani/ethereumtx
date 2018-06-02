@@ -1,0 +1,1 @@
+exports.sign = function() {}

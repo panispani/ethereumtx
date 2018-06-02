@@ -1,0 +1,32 @@
+{
+  "name": "ethtx",
+  "version": "1.0.0",
+  "description": "ES5 compliant transaction builder for Ethereum",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/panpan2/ethtx.git"
+  },
+  "keywords": [
+    "es5",
+    "ethereum",
+    "transaction",
+    "transaction",
+    "builder",
+    "encode",
+    "decode",
+    "create",
+    "sign",
+    "verify",
+    "raw"
+  ],
+  "author": "Panayiotis Panayiotou <p.panayiotou2@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/panpan2/ethtx/issues"
+  },
+  "homepage": "https://github.com/panpan2/ethtx#readme"
+}
