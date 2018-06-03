@@ -100,3 +100,34 @@ module.exports.getFields = function () {
   return [ 'nonce', 'gasPrice', 'gasLimit', 'to', 'value', 'data', 'v', 'r', 's' ];
 }
 
+/* txParamChainId can get overriden if v value of the txParams is set, read EIP 155 */
+module.exports.createrawtransaction = function (txParams, txParamChainId) {
+  raw = [];
+  for (var i = 0; i < txFields.length; i++) {
+    var key = txFields[i].name;
+    if (txParams[key] === undefined) {
+      raw.push(txFields[i].default);
+    } else {
+      raw.push(safeBufferize(txParams[key].substr(2)));
+    }
+  }
+
+  var sigV = parseInt('0x' + raw[V_INDEX].toString('hex'), 'hex')
+  var _chainId = Math.floor((sigV - 35) / 2);
+
+  if (_chainId < 0) {
+    if (txParamChainId !== undefined) {
+      _chainId = txParamChainId;
+    } else {
+      _chainId = 0;
+    }
+  }
+  var chainId = _chainId || txParams.chainId;
+
+  return {
+    'rawtransaction': serialize(raw),
+    'chainId': chainId
+  };
+
+}
+
