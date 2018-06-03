@@ -49,6 +49,41 @@ function safeBufferize(param) {
 function serialize(raw) {
   return rlp.encode(raw).toString('hex');
 }
+
+function txhash(raw, chainId, includeSignature) {
+  if (includeSignature === undefined) {
+    includeSignature = false;
+  }
+  if (chainId === undefined) {
+    chainId = 1;
+  }
+
+  // EIP155 spec:
+  // when computing the hash of a transaction for purposes of signing or recovering,
+  // instead of hashing only the first six elements (ie. nonce, gasprice, startgas, to, value, data),
+  // hash nine elements, with v replaced by CHAIN_ID, r = 0 and s = 0
+
+  var data;
+  if (includeSignature) {
+    data = raw
+  } else {
+    if (chainId > 0) {
+      data = raw.slice()
+      data[V_INDEX] = safeBufferize(chainId.toString(16));
+      data[R_INDEX] = new Buffer([])
+      data[S_INDEX] = new Buffer([])
+    } else {
+      data = raw.slice(0, V_INDEX);
+    }
+  }
+
+  var rlpdata = rlp.encode(data);
+  var keccakHash = new keccak(256)
+  keccakHash.update(rlpdata)
+
+  return safeBufferize(keccakHash.digest('hex'));
+}
+
 function publicToAddress(pubKey) {
   pubKey = safeBufferize(pubKey)
 
@@ -140,3 +175,32 @@ module.exports.decoderawtransaction = function (tx) {
   return txParams;
 }
 
+module.exports.signrawtransaction = function (tx, privateKey, chainId) {
+  /* rlp encode and hash the transaction data first */
+  var raw = rlp.decode(safeBufferize(tx));
+  var msgHash = txhash(raw, chainId);
+
+  if (privateKey[1] == 'x') {
+    privateKey = privateKey.substr(2);
+  }
+
+  var ec = new EC('secp256k1');
+  var key = ec.keyFromPrivate(privateKey, 'hex');
+  var sig = key.sign(msgHash, {canonical: true});
+
+  var recov = sig.recoveryParam + 27;
+  raw[V_INDEX] = safeBufferize(recov.toString(16));
+  raw[R_INDEX] = safeBufferize(sig.r.toString(16));
+  raw[S_INDEX] = safeBufferize(sig.s.toString(16));
+
+  if (chainId > 0) {
+    var newrecov = recov + chainId * 2 + 8;
+    raw[V_INDEX] = safeBufferize(newrecov.toString(16));
+  }
+
+  return {'Signature': sig, 'signedTx': serialize(raw)};
+}
+
+module.exports.verifyrawtransaction = function (tx, privateKey, chainId) {
+  throw new Error("Not implemented");
+}
