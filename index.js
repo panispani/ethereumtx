@@ -49,3 +49,37 @@ function safeBufferize(param) {
 function serialize(raw) {
   return rlp.encode(raw).toString('hex');
 }
+function publicToAddress(pubKey) {
+  pubKey = safeBufferize(pubKey)
+
+  if (pubKey.length !== 64) {
+    throw new Error("Public key length should be 64 bytes");
+  }
+  // Lower 20 bytes of the hash
+  var keccakHash = new keccak(256);
+  keccakHash.update(pubKey);
+  return keccakHash.digest('hex').slice(-40);
+}
+
+function privateToPublic(privateKey) {
+  /* Remove 0x prefix if possible */
+  if (privateKey[1] == 'x') {
+    privateKey = privateKey.substr(2);
+  }
+
+  privateKey = safeBufferize(privateKey);
+
+  if (privateKey.length !== 32) {
+    throw new Error("Private key length should be 32 bytes");
+  }
+
+  var ec = new EC('secp256k1');
+  var key = ec.keyFromPrivate(privateKey, 'hex');
+  return key.getPublic().encode('hex').substr(2);
+}
+
+
+module.exports.privateToPublic = privateToPublic;
+
+module.exports.publicToAddress = publicToAddress;
+
