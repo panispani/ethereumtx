@@ -237,7 +237,7 @@ module.exports.verifyrawtransaction = function (tx, privateKey, chainId) {
   var key = ec.keyFromPrivate(privateKey, 'hex');
   const signature = Buffer.concat([Buffer.from(decodedtx.r, 'hex'), Buffer.from(decodedtx.s, 'hex')], 64);
   if (key.verify(msgHash, { r: decodedtx.r, s: decodedtx.s }, {canonical: true})) {
-    return {'valid': true};
+    return {'valid': true, 'error': ''};
   }
   return {'valid': false, 'error': 'Not signed by privateKey: ' + privateKey};
 }
