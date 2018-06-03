@@ -124,7 +124,7 @@ module.exports.getnewaddress = function () {
   var publicKey = privateToPublic(privateKey);
   var address = publicToAddress(publicKey);
   return {
-    'privateKey': privateKey,
+    'privateKey': privateKey.toString('hex'),
     'publicKey': publicKey,
     'address': address
   }
