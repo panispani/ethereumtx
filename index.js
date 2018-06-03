@@ -131,3 +131,12 @@ module.exports.createrawtransaction = function (txParams, txParamChainId) {
 
 }
 
+module.exports.decoderawtransaction = function (tx) {
+  var raw = rlp.decode(safeBufferize(tx));
+  var txParams = {};
+  for (var i = 0; i < txFields.length; i++) {
+    txParams[txFields[i].name] = raw[i].toString('hex');
+  }
+  return txParams;
+}
+
