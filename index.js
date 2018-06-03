@@ -79,7 +79,24 @@ function privateToPublic(privateKey) {
 }
 
 
+/* Exports */
+/* No support for ICAP Direct yet */
+module.exports.getnewaddress = function () {
+  var privateKey = crypto.randomBytes(32);
+  var publicKey = privateToPublic(privateKey);
+  var address = publicToAddress(publicKey);
+  return {
+    'privateKey': privateKey,
+    'publicKey': publicKey,
+    'address': address
+  }
+}
+
 module.exports.privateToPublic = privateToPublic;
 
 module.exports.publicToAddress = publicToAddress;
+
+module.exports.getFields = function () {
+  return [ 'nonce', 'gasPrice', 'gasLimit', 'to', 'value', 'data', 'v', 'r', 's' ];
+}
 
