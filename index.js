@@ -3,6 +3,8 @@ var EC = require('elliptic').ec;
 const rlp = require('rlp');
 const keccak = require('keccakjs')
 var crypto = require('crypto');
+const BN = require('bn.js');
+
 
 /* Helpers */
 const txFields = [{
@@ -38,6 +40,7 @@ const txFields = [{
 const V_INDEX = 6;
 const R_INDEX = 7;
 const S_INDEX = 8;
+const secp256k1nDIV2 = new BN('7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0', 16);
 
 function safeBufferize(param) {
   if (param.length % 2 == 1) {
@@ -166,7 +169,9 @@ module.exports.createrawtransaction = function (txParams, txParamChainId) {
 
 }
 
-module.exports.decoderawtransaction = function (tx) {
+module.exports.decoderawtransaction = decoderawtransaction;
+
+function decoderawtransaction (tx) {
   var raw = rlp.decode(safeBufferize(tx));
   var txParams = {};
   for (var i = 0; i < txFields.length; i++) {
@@ -201,6 +206,34 @@ module.exports.signrawtransaction = function (tx, privateKey, chainId) {
   return {'Signature': sig, 'signedTx': serialize(raw)};
 }
 
+
 module.exports.verifyrawtransaction = function (tx, privateKey, chainId) {
-  throw new Error("Not implemented");
+  /* Default value */
+  if (chainId === undefined) {
+    chainId = 1;
+  }
+
+  var msgHash = txhash(rlp.decode(safeBufferize(tx)), chainId);
+  var decodedtx = decoderawtransaction(tx);
+
+  // s-value should be less than secp256k1n / 2
+  if (new BN(decodedtx.s, 16).cmp(secp256k1nDIV2) === 1) {
+    return {'valid': false, 'error': 'Invalid Signature'};
+  }
+
+  let v = new BN(decodedtx.v, 16);
+  if (chainId > 0) {
+    v -= chainId * 2 + 8
+  }
+  if (v !== 27 && v !== 28) {
+    throw new Error('Invalid signature v value')
+  }
+
+  var ec = new EC('secp256k1');
+  var key = ec.keyFromPrivate(privateKey, 'hex');
+  const signature = Buffer.concat([Buffer.from(decodedtx.r, 'hex'), Buffer.from(decodedtx.s, 'hex')], 64);
+  if (key.verify(msgHash, { r: decodedtx.r, s: decodedtx.s }, {canonical: true})) {
+    return {'valid': true};
+  }
+  return {'valid': false, 'error': 'Not signed by privateKey: ' + privateKey};
 }
