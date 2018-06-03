@@ -151,16 +151,15 @@ module.exports.createrawtransaction = function (txParams, txParamChainId) {
   }
 
   var sigV = parseInt('0x' + raw[V_INDEX].toString('hex'), 'hex')
-  var _chainId = Math.floor((sigV - 35) / 2);
+  var chainId = Math.floor((sigV - 35) / 2);
 
-  if (_chainId < 0) {
+  if (chainId < 0) {
     if (txParamChainId !== undefined) {
-      _chainId = txParamChainId;
+      chainId = txParamChainId;
     } else {
-      _chainId = 0;
+      chainId = 0;
     }
   }
-  var chainId = _chainId || txParams.chainId;
 
   return {
     'rawtransaction': serialize(raw),
@@ -181,6 +180,11 @@ function decoderawtransaction (tx) {
 }
 
 module.exports.signrawtransaction = function (tx, privateKey, chainId) {
+  /* Default value */
+  if (chainId === undefined) {
+    chainId = 1;
+  }
+
   /* rlp encode and hash the transaction data first */
   var raw = rlp.decode(safeBufferize(tx));
   var msgHash = txhash(raw, chainId);
