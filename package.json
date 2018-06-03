@@ -1,5 +1,5 @@
 {
-  "name": "ethtx",
+  "name": "ethereumtx",
   "version": "1.0.0",
   "description": "ES5 compliant transaction builder for Ethereum",
   "main": "index.js",
@@ -28,5 +28,10 @@
   "bugs": {
     "url": "https://github.com/panpan2/ethtx/issues"
   },
-  "homepage": "https://github.com/panpan2/ethtx#readme"
+  "homepage": "https://github.com/panpan2/ethtx#readme",
+  "dependencies": {
+    "elliptic": "^6.4.0",
+    "keccakjs": "^0.2.1",
+    "rlp": "^2.0.0"
+  }
 }
