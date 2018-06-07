@@ -37,8 +37,6 @@ const txParams = {
   gasLimit: '0xdbba0',
   to: '0xd6e4caea206c9e58187cf129eeaa61b600b483bc',
   value: '0x4000',
-  // EIP 155 chainId - mainnet: 1, ropsten: 3
-  chainId: 1
 };
 
 var rawtx = ethtx.createrawtransaction(txParams);
@@ -46,6 +44,7 @@ console.log(rawtx);
 /*
 { rawtransaction: 'e7048504a817c800830dbba094d6e4caea206c9e58187cf129eeaa61b600b483bc824000801c8080',
   chainId: 1 }
+  // Mainnet chainId: 1 (default)
 */
 var signedtx = ethtx.signrawtransaction(rawtx.rawtransaction, privateKey, rawtx.chainId);
 console.log(signedtx);
