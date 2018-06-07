@@ -36,7 +36,7 @@ const txParams = {
   gasPrice: '0x4a817c800',
   gasLimit: '0xdbba0',
   to: '0xd6e4caea206c9e58187cf129eeaa61b600b483bc',
-  value: '0x4000',
+  value: '0x4000'
 };
 
 var rawtx = ethtx.createrawtransaction(txParams);
